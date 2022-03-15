@@ -37,13 +37,13 @@ public class CreateBoard : MonoBehaviour
 
     public int startPosX = 3;
     public int startPosY = 0;
-
-    public int randomTetromino = Random.Range(0, 7);
+    public int randomTetromino;
 
     public int[,,] TetrominoBlock;
 
     private void Awake()
     {
+        randomTetromino = Random.Range(0, 7);
         TetrominoBlock = new int[7, 4, 4]
             {
         // I
@@ -133,6 +133,21 @@ public class CreateBoard : MonoBehaviour
         {
             for (int j = 0; j < 12; j++)
             {
+                if ((i >= 0 && i < 4) || (j >= 0 && j < 4))
+                {
+                    // int a 
+                    board[j - startPosY, i - startPosX] = TetrominoBlock[randomTetromino, j, i];
+
+                }
+            }
+        }
+
+
+
+        for (int i = 0; i < 24; i++)
+        {
+            for (int j = 0; j < 12; j++)
+            {
                 if (board[i, j] == 1)
                 {
                     renderBoard[i, j] = Instantiate(bar, new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
@@ -179,7 +194,7 @@ public class CreateBoard : MonoBehaviour
             }
         }
 
-        PrintTetris();
+        //PrintTetris();
     }
 
 
@@ -190,10 +205,10 @@ public class CreateBoard : MonoBehaviour
         {
             for (int j = 0; j < 12; j++)
             {
-                if (i < 4 || j < 4)
+                if ((i >= 0 && i < 4) || (j >= 0 && j < 4) )
                 {
                     // int a 
-                    board[i + startPosY, j + startPosX] = 5;//TetrominoBlock[randomTetromino, j, i];
+                    board[j - startPosY, i - startPosX] = TetrominoBlock[randomTetromino, j, i];
 
                 }
             }
