@@ -58,3 +58,20 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
+# =============== #
+ 
+# Unity generated #
+ 
+# =============== #
+ 
+Temp/
+ 
+Obj/
+ 
+UnityGenerated/
+ 
+Library/
+
+Logs/
+ 
+ 
