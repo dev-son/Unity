@@ -22,8 +22,13 @@ public enum TerominoColor
     Z
 }
 
+
+
 public class CreateBoard : MonoBehaviour
 {
+    public const int HorzontalBoard = 12;
+    public const int VerticalBoard = 24;
+
     public TerominoColor terominoColor;                 // 테트로미노 색깔
     public GameObject emptyBlock;                       // 빈 블럭
     public GameObject bar;                              // 테두리
@@ -37,8 +42,12 @@ public class CreateBoard : MonoBehaviour
 
     // 생성될 위치
     public int startPosX = 4;
-    public int startPosY = 20; 
-    
+    public int startPosY = 20;
+
+    // 이동 시킬 좌표
+    public int movePosX = 0;
+    public int movePosY = 0;
+
     public int randomTetromino; // 테트로미노 랜덤으로 인덱스 주기위한 변수
 
     public int[,,] TetrominoBlock; // 7개의 테트로미노 모양을 가지고있는 배열
@@ -129,34 +138,44 @@ public class CreateBoard : MonoBehaviour
     {
         // 테트리로미노 출력 테스트용
         //PrintTetromino();
-         if (Input.GetKey(KeyCode.DownArrow))
+         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             // board[i, j] = -1;
-            if(startPosY >= 0)
+            if(movePosY + startPosY > 1)
             {
-                startPosY += -1;
+                movePosY += -1;
             }
+
+        }
+         else if(Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            if (movePosX + startPosX > 1)
+                movePosX += -1;
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            if (movePosX + startPosX < 7)
+                movePosX += 1;
         }
 
+
+        BaseBoard();
 
         // 생성될 테트로미노를 상단 중앙으로 위치시키는 함수
         TetrominoPostionSetting();
 
+        
         // 실제로 테트리스를 그려주는 함수.
         RenderTetrisBoard();
 
-        // 보드 초기화
-        //InitBoard();
-
-       
     }
 
     // 테트리스 판 초기화
     public void InitBoard()
     {
-        for (int i = 0; i < 24; i++)
+        for (int i = 0; i < VerticalBoard; i++)
         {
-            for (int j = 0; j < 12; j++)
+            for (int j = 0; j < HorzontalBoard; j++)
             {
                 if (i == 0 || j == 0 || j == 11)
                 {
@@ -172,6 +191,24 @@ public class CreateBoard : MonoBehaviour
         }
     }
 
+    public void BaseBoard()
+    {
+        for (int i = 0; i < 24; i++)
+        {
+            for (int j = 0; j < 12; j++)
+            {
+                if (i == 0 || j == 0 || j == 11)
+                {
+                    board[i, j] = 1;
+                }
+                else
+                {
+                    board[i, j] = 0;
+                }
+            }
+        }
+    }
+
     // 생성될 테트로미노를 상단 중앙으로 위치시키는 함수
     public void TetrominoPostionSetting()
     {
@@ -181,9 +218,11 @@ public class CreateBoard : MonoBehaviour
             {
                 if ((i >= 0 && i < 4) && (j >= 0 && j < 4))
                 {
-                    board[i + startPosY, j + startPosX] = TetrominoBlock[randomTetromino, i, j];
+                    if(TetrominoBlock[randomTetromino, i, j] != 0)
+                    {
+                        board[i + startPosY + movePosY, j + startPosX + movePosX] = TetrominoBlock[randomTetromino, i, j];
+                    }
                 }
-
             }
         }
     }
@@ -196,13 +235,6 @@ public class CreateBoard : MonoBehaviour
             for(int j = 0; j < 4; j++)
             {
                 renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[6], new Vector3((j + 20) * 1.5f, (i + 20) * 1.5f, 0f), Quaternion.identity); //.GetComponent<SpriteRenderer>.color(255, 156, 0, 255); 
-                                                                                                                                    //Instantiate(blocks[6], new Vector3((j+20) * 1.5f, (i+20) * 1.5f, 0f), Quaternion.identity);
-
-                /*
-                 * GetComponent<Renderer>().material = newMaterrial..GetComponent<Renderer>().materia
-       
-                 * 
-                 */
             }
         }
     }
@@ -284,5 +316,21 @@ public class CreateBoard : MonoBehaviour
                 }
             }
         }
+    }
+
+    // 체크를 해야한다. 정수형 배열이 비었는지 안 비었는지
+    public bool CheckTetris()
+    {
+        for(int i = 0; i < VerticalBoard; i++)
+        {
+            for(int j = 0; j < HorzontalBoard; j++)
+            {
+
+            }
+        }
+
+
+
+        return true;
     }
 }

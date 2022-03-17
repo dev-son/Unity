@@ -236,7 +236,9 @@ MonoBehaviour:
   - {fileID: 767080579185288799, guid: 344b8bc3a6737ee458b3430b3ac699e1, type: 3}
   startPosX: 4
   startPosY: 20
-  randomTetromino: 4
+  movePosX: 0
+  movePosY: 0
+  randomTetromino: 0
   Red: 0
   Blue: 0
   Green: 0
