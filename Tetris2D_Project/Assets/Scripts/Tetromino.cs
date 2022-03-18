@@ -2,10 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-
-
-public class Tetromino : MonoBehaviour
-{
     public enum TetrominoColor
     {
         I = 2,
@@ -16,6 +12,10 @@ public class Tetromino : MonoBehaviour
         T,
         Z
     }
+
+public class Tetromino : MonoBehaviour
+{
+
 
   
     //public int[,,] TetrominoBlock = new int[7, 4, 4]

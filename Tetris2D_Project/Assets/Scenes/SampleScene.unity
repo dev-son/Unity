@@ -238,7 +238,7 @@ MonoBehaviour:
   startPosY: 20
   movePosX: 0
   movePosY: 0
-  randomTetromino: 0
+  randomTetromino: 6
   Red: 0
   Blue: 0
   Green: 0

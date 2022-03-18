@@ -37,6 +37,7 @@ public class CreateBoard : MonoBehaviour
     public int[,] board = new int[24, 12];
     public GameObject[,] renderBoard = new GameObject[24, 12];
 
+
     // 테트로미노컬러 오브젝트의 컴포넌트인 Tetromino 스크립트를 가져오겠다!
     //Tetromino tetroColor = GameObject.Find("Tetromino").GetComponent<Tetromino>();
 
@@ -50,7 +51,10 @@ public class CreateBoard : MonoBehaviour
 
     public int randomTetromino; // 테트로미노 랜덤으로 인덱스 주기위한 변수
 
-    public int[,,] TetrominoBlock; // 7개의 테트로미노 모양을 가지고있는 배열
+    public int[,,,] TetrominoBlock; // 7개의 테트로미노 모양을 가지고있는 배열
+
+    // 테트로미노를 바꾸는 변수
+    public int changeTetromino = 0;
 
     SpriteRenderer SpRenderer;
     Color m_NewColor;
@@ -58,70 +62,223 @@ public class CreateBoard : MonoBehaviour
     // spreteRender에 사용할 색깔
     public float Red, Blue, Green;
 
+    enum CShape
+    {
+        line,
+        rect,
+
+    };
+    CShape m_Shape;
+
+
     private void Awake()
     {
         SpRenderer = GetComponent<SpriteRenderer>();
 
+        m_Shape = CShape.line;
+
         SpRenderer.color = Color.black;
 
-        randomTetromino = Random.Range(0, 7);
-        TetrominoBlock = new int[7, 4, 4]
+        randomTetromino = Random.Range(1, 2);
+        TetrominoBlock = new int[7, 4, 4, 4]
             {
         // I
         {
-            { 0, 0, 0, 0 },
-            { 0, 0, 0, 0 },
-            { 2, 2, 2, 2 },
-            { 0, 0, 0, 0 }
-        },    
-        
-        // L
-        {
-            { 0, 0, 0, 0 },
-            { 0, 3, 0, 0 },
-            { 0, 3, 3, 3 },
-            { 0, 0, 0, 0 }
-        },     
-        
-        // J
-        {
-            { 0, 0, 0, 0 },
-            { 0, 0, 0, 4 },
-            { 0, 4, 4, 4 },
-            { 0, 0, 0, 0 }
-        },             
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 },
+                        { 2, 2, 2, 2 },
+                        { 0, 0, 0, 0 },
+                    },
+                    {
+                        { 0, 0, 2, 0 },
+                        { 0, 0, 2, 0 },
+                        { 0, 0, 2, 0 },
+                        { 0, 0, 2, 0 },
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 },
+                        { 2, 2, 2, 2 },
+                        { 0, 0, 0, 0 },
+                    },
+                     {
+                        { 0, 0, 2, 0 },
+                        { 0, 0, 2, 0 },
+                        { 0, 0, 2, 0 },
+                        { 0, 0, 2, 0 },
+                    },
 
-        // O
+        },
+             // L
         {
-            { 0, 0, 0, 0 },
-            { 0, 5, 5, 0 },
-            { 0, 5, 5, 0 },
-            { 0, 0, 0, 0 }
-        },     
-          
+                     {
+                         { 0, 0, 0, 0 },
+                         { 0, 3, 0, 0 },
+                         { 0, 3, 3, 3 },
+                         { 0, 0, 0, 0 }
+                     },
+                     {
+                         { 0, 0, 3, 0 },
+                         { 0, 0, 3, 0 },
+                         { 0, 3, 3, 0 },
+                         { 0, 0, 0, 0 }
+                     },
+                      {
+                         { 0, 0, 0, 0 },
+                         { 3, 3, 3, 0 },
+                         { 0, 0, 3, 0 },
+                         { 0, 0, 0, 0 }
+                     },
+                     {
+                         { 0, 0, 0, 0 },
+                         { 0, 3, 3, 0 },
+                         { 0, 3, 0, 0 },
+                         { 0, 3, 0, 0 }
+                     },
+        },
+        // J
+        { 
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 0, 4, 0 },
+                        { 4, 4, 4, 0 },
+                        { 0, 0, 0, 0 }
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 4, 4, 0 },
+                        { 0, 0, 4, 0 },
+                        { 0, 0, 4, 0 },
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 4, 4, 4 },
+                        { 0, 4, 0, 0 },
+                        { 0, 0, 0, 0 }
+                    },
+                    {
+                        { 0, 4, 0, 0 },
+                        { 0, 4, 0, 0 },
+                        { 0, 4, 4, 0 },
+                        { 0, 0, 0, 0 }
+                    },
+        },
+        // O
+        { 
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 5, 5, 0 },
+                        { 0, 5, 5, 0 },
+                        { 0, 0, 0, 0 }
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 5, 5, 0 },
+                        { 0, 5, 5, 0 },
+                        { 0, 0, 0, 0 }
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 5, 5, 0 },
+                        { 0, 5, 5, 0 },
+                        { 0, 0, 0, 0 }
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 5, 5, 0 },
+                        { 0, 5, 5, 0 },
+                        { 0, 0, 0, 0 }
+                    },
+          },
         // S
         {
-            { 0, 0, 0, 0 },
-            { 0, 0, 6, 6 },
-            { 0, 6, 6, 0 },
-            { 0, 0, 0, 0 }
-        },    
-          
-        // T
-        {
-            { 0, 0, 0, 0 },
-            { 0, 0, 7, 0 },
-            { 0, 7, 7, 7 },
-            { 0, 0, 0, 0 }
-        },     
-          
-        // Z
-        {
-            { 0, 0, 0, 0 },
-            { 0, 8, 8, 0 },
-            { 0, 0, 8, 8 },
-            { 0, 0, 0, 0 }
+                    {
+                         { 0, 0, 0, 0 },
+                         { 0, 0, 6, 6 },
+                         { 0, 6, 6, 0 },
+                         { 0, 0, 0, 0 }
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 6, 0, 0 },
+                        { 0, 6, 6, 0 },
+                        { 0, 0, 6, 0 }
+                    },
+                      {
+                         { 0, 0, 0, 0 },
+                         { 0, 0, 6, 6 },
+                         { 0, 6, 6, 0 },
+                         { 0, 0, 0, 0 }
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 6, 0, 0 },
+                        { 0, 6, 6, 0 },
+                        { 0, 0, 6, 0 }
+                    },
+
         },
+
+        // T
+        { 
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 0, 7, 0 },
+                        { 0, 7, 7, 7 },
+                        { 0, 0, 0, 0 }
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 0, 7, 0 },
+                        { 0, 7, 7, 0 },
+                        { 0, 0, 7, 0 }
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 0, 0, 0 },
+                        { 0, 7, 7, 7 },
+                        { 0, 0, 7, 0 }
+                    },
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 0, 7, 0 },
+                        { 0, 0, 7, 7 },
+                        { 0, 0, 7, 0 }
+                    },
+        },
+        // Z
+        
+        {
+                    { 
+                         { 0, 0, 0, 0 },
+                         { 0, 8, 8, 0 },
+                         { 0, 0, 8, 8 },
+                         { 0, 0, 0, 0 }
+                    },
+
+                    {
+                         { 0, 0, 0, 0 },
+                         { 0, 8, 8, 0 },
+                         { 0, 0, 8, 8 },
+                         { 0, 0, 0, 0 }
+                    },
+
+                    {
+                         { 0, 0, 0, 0 },
+                         { 0, 8, 8, 0 },
+                         { 0, 0, 8, 8 },
+                         { 0, 0, 0, 0 }
+                    },
+
+                    {
+                        { 0, 0, 0, 0 },
+                        { 0, 8, 8, 0 },
+                        { 0, 0, 8, 8 },
+                        { 0, 0, 0, 0 }
+                    },
+        },
+        
             };
     }
 
@@ -136,35 +293,59 @@ public class CreateBoard : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        // 테트리로미노 출력 테스트용
-        //PrintTetromino();
-         if (Input.GetKeyDown(KeyCode.DownArrow))
+        if(Input.GetKeyDown(KeyCode.A))
         {
-            // board[i, j] = -1;
-            if(movePosY + startPosY > 1)
+            if(randomTetromino < 7)
+            {
+                randomTetromino++;
+            }
+            else
+            {
+                randomTetromino = 0;
+            }
+        }
+        if (Input.GetKeyDown(KeyCode.UpArrow))
+        {
+            if(changeTetromino < 4)
+            {
+                changeTetromino++;
+            }
+            else
+            {
+                changeTetromino = 0;
+            }
+        }
+
+
+        if (Input.GetKeyDown(KeyCode.DownArrow))
+        {
+            if (DownCheckTetris() == true)
             {
                 movePosY += -1;
             }
-
         }
-         else if(Input.GetKeyDown(KeyCode.LeftArrow))
+        else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            if (movePosX + startPosX > 1)
+            if (LeftCheckTetris() == true)
+            {
                 movePosX += -1;
+            }
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            if (movePosX + startPosX < 7)
+            if (RightCheckTetris() == true)
+            {
                 movePosX += 1;
+            }
+
         }
 
-
+        // 보드 그려줌
         BaseBoard();
 
         // 생성될 테트로미노를 상단 중앙으로 위치시키는 함수
         TetrominoPostionSetting();
 
-        
         // 실제로 테트리스를 그려주는 함수.
         RenderTetrisBoard();
 
@@ -218,9 +399,9 @@ public class CreateBoard : MonoBehaviour
             {
                 if ((i >= 0 && i < 4) && (j >= 0 && j < 4))
                 {
-                    if(TetrominoBlock[randomTetromino, i, j] != 0)
+                    if (TetrominoBlock[randomTetromino, changeTetromino, i, j] != 0)
                     {
-                        board[i + startPosY + movePosY, j + startPosX + movePosX] = TetrominoBlock[randomTetromino, i, j];
+                        board[i + startPosY + movePosY, j + startPosX + movePosX] = TetrominoBlock[randomTetromino, changeTetromino, i, j];
                     }
                 }
             }
@@ -230,9 +411,9 @@ public class CreateBoard : MonoBehaviour
     // 테트리미노 출력 되나 확인
     public void PrintTetromino()
     {
-        for(int i = 0; i < 4; i++)
+        for (int i = 0; i < 4; i++)
         {
-            for(int j = 0; j < 4; j++)
+            for (int j = 0; j < 4; j++)
             {
                 renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[6], new Vector3((j + 20) * 1.5f, (i + 20) * 1.5f, 0f), Quaternion.identity); //.GetComponent<SpriteRenderer>.color(255, 156, 0, 255); 
             }
@@ -319,18 +500,100 @@ public class CreateBoard : MonoBehaviour
     }
 
     // 체크를 해야한다. 정수형 배열이 비었는지 안 비었는지
-    public bool CheckTetris()
+    public bool LeftCheckTetris()
     {
-        for(int i = 0; i < VerticalBoard; i++)
+        for (int i = 0; i < VerticalBoard; i++)
         {
-            for(int j = 0; j < HorzontalBoard; j++)
+            for (int j = 0; j < HorzontalBoard; j++)
             {
-
+                if (board[i, j] != 0 && board[i, j] != 1)
+                {
+                    if (board[i, j - 1] == 1) // 왼쪽이 벽을 만났다.
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        // 왼쪽 벽이없다?
+                        continue;
+                    }
+                }
             }
+
+
         }
-
-
-
         return true;
     }
+
+    public bool RightCheckTetris()
+    {
+        for (int i = 0; i < VerticalBoard; i++)
+        {
+            for (int j = 0; j < HorzontalBoard; j++)
+            {
+                if (board[i, j] != 0 && board[i, j] != 1)
+                {
+                    if (board[i, j + 1] == 1) // 오른쪽이 벽을 만났다.
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        // 오른쪽 벽이없다?
+                        continue;
+                    }
+                }
+            }
+
+
+        }
+        return true;
+    }
+
+    public bool DownCheckTetris()
+    {
+        for (int i = 0; i < VerticalBoard; i++)
+        {
+            for (int j = 0; j < HorzontalBoard; j++)
+            {
+                if (board[i, j] != 0 && board[i, j] != 1)
+                {
+                    if (board[i - 1, j] == 1) // 아래
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                       
+                        continue;
+                    }
+                }
+            }
+
+
+        }
+        return true;
+    }
+
+    // 체인지 할 때 벽을 만났을 때
+    public bool ChangeCheckTetris()
+    {
+        for (int i = 0; i < VerticalBoard; i++)
+        {
+            for (int j = 0; j < HorzontalBoard; j++)
+            {
+                if (board[i, j] != 0 && board[i, j] != 1)
+                {
+                    if(board[i - 1, j] == 1)
+                    {
+                        
+                    }
+                }
+            }
+
+
+        }
+        return true;
+    }
+
 }
