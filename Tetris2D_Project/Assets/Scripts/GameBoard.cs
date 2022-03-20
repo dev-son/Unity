@@ -24,7 +24,7 @@ public enum TerominoColor
 
 
 
-public class CreateBoard : MonoBehaviour
+public class GameBoard : MonoBehaviour
 {
     public const int HorzontalBoard = 12;
     public const int VerticalBoard = 24;
@@ -36,6 +36,7 @@ public class CreateBoard : MonoBehaviour
 
     public int[,] board = new int[24, 12];
     public GameObject[,] renderBoard = new GameObject[24, 12];
+    public int[,] fillBoard = new int[24, 12];
 
 
     // 테트로미노컬러 오브젝트의 컴포넌트인 Tetromino 스크립트를 가져오겠다!
@@ -55,6 +56,7 @@ public class CreateBoard : MonoBehaviour
 
     // 테트로미노를 바꾸는 변수
     public int changeTetromino = 0;
+    public const int TETROMINO_CHANGE_COUNT = 4;
 
     SpriteRenderer SpRenderer;
     Color m_NewColor;
@@ -62,20 +64,43 @@ public class CreateBoard : MonoBehaviour
     // spreteRender에 사용할 색깔
     public float Red, Blue, Green;
 
-    enum CShape
-    {
-        line,
-        rect,
+    // rotationRightChek
+    public bool RightRotationCheck = false;
+    public bool LeftRotationCheck = false;
 
-    };
-    CShape m_Shape;
+    public const int EMPTY = 0;
+    public const int WALL = 1;
+    public const int I_TETROMINO = 2;
+    public const int L_TETROMINO = 3;
+    public const int J_TETROMINO = 4;
+    public const int O_TETROMINO = 5;
+    public const int S_TETROMINO = 6;
+    public const int T_TETROMINO = 7;
+    public const int Z_TETROMINO = 8;
 
+    public const int TETROMINOSIZE = 7;
+
+    // I블럭을 위한 변수
+    public bool IBlock = false;
+
+
+    // 블럭의 종류
+    public int blocksKind;
+
+    //enum CShape
+    //{
+    //    line,
+    //    rect,
+
+    //};
+    //CShape m_Shape;
+
+       
 
     private void Awake()
     {
         SpRenderer = GetComponent<SpriteRenderer>();
-
-        m_Shape = CShape.line;
+        //m_Shape = CShape.line;
 
         SpRenderer.color = Color.black;
 
@@ -87,26 +112,26 @@ public class CreateBoard : MonoBehaviour
                     {
                         { 0, 0, 0, 0 },
                         { 0, 0, 0, 0 },
-                        { 2, 2, 2, 2 },
+                        { I_TETROMINO, I_TETROMINO, I_TETROMINO, I_TETROMINO },
                         { 0, 0, 0, 0 },
                     },
                     {
-                        { 0, 0, 2, 0 },
-                        { 0, 0, 2, 0 },
-                        { 0, 0, 2, 0 },
-                        { 0, 0, 2, 0 },
+                        { 0, 0, I_TETROMINO, 0 },
+                        { 0, 0, I_TETROMINO, 0 },
+                        { 0, 0, I_TETROMINO, 0 },
+                        { 0, 0, I_TETROMINO, 0 },
                     },
                     {
                         { 0, 0, 0, 0 },
                         { 0, 0, 0, 0 },
-                        { 2, 2, 2, 2 },
+                        { I_TETROMINO, I_TETROMINO, I_TETROMINO, I_TETROMINO },
                         { 0, 0, 0, 0 },
                     },
                      {
-                        { 0, 0, 2, 0 },
-                        { 0, 0, 2, 0 },
-                        { 0, 0, 2, 0 },
-                        { 0, 0, 2, 0 },
+                       { 0, 0, I_TETROMINO, 0 },
+                        { 0, 0, I_TETROMINO, 0 },
+                        { 0, 0, I_TETROMINO, 0 },
+                        { 0, 0, I_TETROMINO, 0 },
                     },
 
         },
@@ -259,9 +284,9 @@ public class CreateBoard : MonoBehaviour
 
                     {
                          { 0, 0, 0, 0 },
+                         { 0, 0, 8, 0 },
                          { 0, 8, 8, 0 },
-                         { 0, 0, 8, 8 },
-                         { 0, 0, 0, 0 }
+                         { 0, 8, 0, 0 }
                     },
 
                     {
@@ -273,9 +298,9 @@ public class CreateBoard : MonoBehaviour
 
                     {
                         { 0, 0, 0, 0 },
-                        { 0, 8, 8, 0 },
-                        { 0, 0, 8, 8 },
-                        { 0, 0, 0, 0 }
+                         { 0, 0, 8, 0 },
+                         { 0, 8, 8, 0 },
+                         { 0, 8, 0, 0 }
                     },
         },
         
@@ -295,25 +320,65 @@ public class CreateBoard : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.A))
         {
-            if(randomTetromino < 7)
+            if (randomTetromino < TETROMINOSIZE)
             {
-                randomTetromino++;
-            }
-            else
-            {
-                randomTetromino = 0;
-            }
+                if (randomTetromino != 6)
+                {
+                    randomTetromino++;
+                }
+                else
+                {
+                    randomTetromino = 0;
+                }
+            }            
+            
         }
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            if(changeTetromino < 4)
+            // 테트리미노 
+            if(changeTetromino < TETROMINO_CHANGE_COUNT)
             {
-                changeTetromino++;
+                if( changeTetromino != 3)
+                { 
+                    changeTetromino++;
+                    if(ChangeCheckTetris() == true)
+                    {
+                    }
+                    else if(ChangeCheckTetris() == false && LeftRotationCheck == true && IBlock == true)
+                    {
+                        movePosX += 2;
+                        LeftRotationCheck = false;
+                        IBlock = false;
+                    }
+                    else if(ChangeCheckTetris() == false && LeftRotationCheck == true)
+                    {
+                        movePosX += 1;
+                        LeftRotationCheck = false;
+                    }
+                    else if(ChangeCheckTetris() == false && RightRotationCheck == true)
+                    {
+                        movePosX += -1;
+                        RightRotationCheck = false;
+                    }
+
+                }
+                else
+                {
+                    changeTetromino = 0;
+                    if (ChangeCheckTetris() == true)
+                    {
+                    }
+                    else if (ChangeCheckTetris() == false)
+                    {
+                        movePosX += 1;
+                        //if(RightRotationCheck == false)
+                        //{
+                        //    movePosX += -1;
+                        //}
+                    }
+                }
             }
-            else
-            {
-                changeTetromino = 0;
-            }
+           
         }
 
 
@@ -374,13 +439,17 @@ public class CreateBoard : MonoBehaviour
 
     public void BaseBoard()
     {
-        for (int i = 0; i < 24; i++)
+        for (int i = 0; i < VerticalBoard; i++)
         {
-            for (int j = 0; j < 12; j++)
+            for (int j = 0; j < HorzontalBoard; j++)
             {
                 if (i == 0 || j == 0 || j == 11)
                 {
                     board[i, j] = 1;
+                }
+                else if(DownCheckTetris() == false)
+                {
+                    fillBoard[i, j] = board[i, j];
                 }
                 else
                 {
@@ -393,9 +462,9 @@ public class CreateBoard : MonoBehaviour
     // 생성될 테트로미노를 상단 중앙으로 위치시키는 함수
     public void TetrominoPostionSetting()
     {
-        for (int i = 0; i < 24; i++)
+        for (int i = 0; i < VerticalBoard; i++)
         {
-            for (int j = 0; j < 12; j++)
+            for (int j = 0; j < HorzontalBoard; j++)
             {
                 if ((i >= 0 && i < 4) && (j >= 0 && j < 4))
                 {
@@ -427,74 +496,150 @@ public class CreateBoard : MonoBehaviour
         {
             for (int j = 0; j < 12; j++)
             {
-                if (board[i, j] == 1)
+                blocksKind = board[i, j];
+                switch(blocksKind)
                 {
-                    m_NewColor = new Color(1, 1, 1);
-                    SpRenderer.color = m_NewColor;
+                    case EMPTY:
+                        {
+                            m_NewColor = new Color(100, 100, 100);
+                            SpRenderer.color = m_NewColor;
 
-                    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(bar, new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
-                }
-                else if (board[i, j] == 0)
-                {
-                    m_NewColor = new Color(0, 0, 0);
-                    SpRenderer.color = m_NewColor;
-                    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(emptyBlock, new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
-                }
-                // I
-                else if (board[i, j] == 2)
-                {
-                    m_NewColor = new Color(0, 252, 255);
-                    SpRenderer.color = m_NewColor;
+                            renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(bar, new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                        }
+                        break;
+                    case WALL:
+                        {
+                            m_NewColor = new Color(0, 0, 0);
+                            SpRenderer.color = m_NewColor;
+                            renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(emptyBlock, new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                        }
+                        break;
+                    case I_TETROMINO:
+                        {
+                            m_NewColor = new Color(0, 252, 255);
+                            SpRenderer.color = m_NewColor;
 
-                    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[0], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
-                }
-                // L
-                else if (board[i, j] == 3)
-                {
-                    m_NewColor = new Color(0, 55, 255);
-                    SpRenderer.color = m_NewColor;
+                            renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[0], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                        }
+                        break;
+                    case L_TETROMINO:
+                        {
+                            m_NewColor = new Color(0, 55, 255);
+                            SpRenderer.color = m_NewColor;
 
-                    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[1], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
-                }
-                // J
-                else if (board[i, j] == 4)
-                {
-                    m_NewColor = new Color(255, 56, 0);
-                    SpRenderer.color = m_NewColor;
+                            renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[1], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                        }
+                        break;
+                    case J_TETROMINO:
+                        {
+                            m_NewColor = new Color(255, 156, 0);
+                            SpRenderer.color = m_NewColor;
 
-                    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[2], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
-                }
-                // O
-                else if (board[i, j] == 5)
-                {
-                    m_NewColor = new Color(246, 255, 0);
-                    SpRenderer.color = m_NewColor;
+                            renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[2], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                        }
+                        break;
+                    case O_TETROMINO:
+                        {
+                            m_NewColor = new Color(246, 255, 0);
+                            SpRenderer.color = m_NewColor;
 
-                    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[3], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
-                }
-                // S
-                else if (board[i, j] == 6)
-                {
-                    m_NewColor = new Color(28, 255, 0);
-                    SpRenderer.color = m_NewColor;
+                            renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[3], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                        }
+                        break;
+                    case S_TETROMINO:
+                        {
+                            m_NewColor = new Color(28, 255, 0);
+                            SpRenderer.color = m_NewColor;
 
-                    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[4], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
-                }
-                // T
-                else if (board[i, j] == 7)
-                {
-                    m_NewColor = new Color(233, 255, 0);
-                    SpRenderer.color = m_NewColor;
+                            renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[4], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                        }
+                        break;
+                    case T_TETROMINO:
+                        {
+                            m_NewColor = new Color(233, 0, 255);
+                            SpRenderer.color = m_NewColor;
 
-                    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[5], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                            renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[5], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                        }
+                        break;
+                    case Z_TETROMINO:
+                        {
+                            m_NewColor = new Color(255, 0, 41);
+                            SpRenderer.color = m_NewColor;
+                            renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[6], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                        }
+                        break;
                 }
-                // J
-                else if (board[i, j] == 8)
-                {
-                    m_NewColor = new Color(255, 156, 0);
-                    SpRenderer.color = m_NewColor;
-                    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[6], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
-                }
+
+                
+                //if (board[i, j] == 1)
+                //{
+                //    m_NewColor = new Color(1, 1, 1);
+                //    SpRenderer.color = m_NewColor;
+
+                //    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(bar, new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                //}
+                //else if (board[i, j] == 0)
+                //{
+                //    m_NewColor = new Color(0, 0, 0);
+                //    SpRenderer.color = m_NewColor;
+                //    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(emptyBlock, new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                //}
+                //// I
+                //else if (board[i, j] == 2)
+                //{
+                //    m_NewColor = new Color(0, 252, 255);
+                //    SpRenderer.color = m_NewColor;
+
+                //    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[0], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                //}
+                //// L
+                //else if (board[i, j] == 3)
+                //{
+                //    m_NewColor = new Color(0, 55, 255);
+                //    SpRenderer.color = m_NewColor;
+
+                //    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[1], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                //}
+                //// J
+                //else if (board[i, j] == 4)
+                //{
+                //    m_NewColor = new Color(255, 56, 0);
+                //    SpRenderer.color = m_NewColor;
+
+                //    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[2], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                //}
+                //// O
+                //else if (board[i, j] == 5)
+                //{
+                //    m_NewColor = new Color(246, 255, 0);
+                //    SpRenderer.color = m_NewColor;
+
+                //    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[3], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                //}
+                //// S
+                //else if (board[i, j] == 6)
+                //{
+                //    m_NewColor = new Color(28, 255, 0);
+                //    SpRenderer.color = m_NewColor;
+
+                //    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[4], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                //}
+                //// T
+                //else if (board[i, j] == 7)
+                //{
+                //    m_NewColor = new Color(233, 255, 0);
+                //    SpRenderer.color = m_NewColor;
+
+                //    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[5], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                //}
+                //// Z
+                //else if (board[i, j] == 8)
+                //{
+                //    m_NewColor = new Color(255, 156, 0);
+                //    SpRenderer.color = m_NewColor;
+                //    renderBoard[i, j].GetComponent<SpriteRenderer>().color = SpRenderer.color; //Instantiate(blocks[6], new Vector3(j * 1.5f, i * 1.5f, 0f), Quaternion.identity);
+                //}
             }
         }
     }
@@ -506,7 +651,7 @@ public class CreateBoard : MonoBehaviour
         {
             for (int j = 0; j < HorzontalBoard; j++)
             {
-                if (board[i, j] != 0 && board[i, j] != 1)
+                if (board[i, j] != 0 && board[i, j] != 1 )
                 {
                     if (board[i, j - 1] == 1) // 왼쪽이 벽을 만났다.
                     {
@@ -564,7 +709,6 @@ public class CreateBoard : MonoBehaviour
                     }
                     else
                     {
-                       
                         continue;
                     }
                 }
@@ -582,18 +726,36 @@ public class CreateBoard : MonoBehaviour
         {
             for (int j = 0; j < HorzontalBoard; j++)
             {
-                if (board[i, j] != 0 && board[i, j] != 1)
+                if (board[i, j] != 0 && board[i, j] != 1 && board[i, j] != 5)
                 {
-                    if(board[i - 1, j] == 1)
+                    if((board[i, j] == 2 && board[i, j - 1] == 1) || (board[i, j] == 2 && board[i, j - 2] == 1)) // I모양 블럭이면서 왼쪽 벽을 만났다.
                     {
-                        
+                        IBlock = true;
+                        LeftRotationCheck = true;
+                        return false;
+                    }
+                    else if (board[i, j - 1] == 1) // 왼쪽이 벽을 만났다.
+                    {
+                        LeftRotationCheck = true;
+                        return false;
+                    }
+                    else if(board[i, j + 1] == 1) // 오른쪽 벽을 만났다.
+                    {
+                        RightRotationCheck = true;
+                        return false;
+                    }
+                    else
+                    {
+                        // 왼쪽 벽이없다?
+                        continue;
                     }
                 }
+
+
             }
 
 
         }
         return true;
     }
-
 }
