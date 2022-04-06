@@ -411,7 +411,6 @@ public class GameBoard : MonoBehaviour
             {
                 movePosX += 1;
             }
-
         }
 
         // 보드 그려줌
